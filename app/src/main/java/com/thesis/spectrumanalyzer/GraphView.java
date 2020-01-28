@@ -36,7 +36,7 @@ public class GraphView extends View {
     private void init() {
         data = null;
         state = FormulasUtil.State.A_WEIGHTING;
-        fadePaint.setColor(Color.argb(238, 255, 255, 255));
+        fadePaint.setColor(Color.argb(222, 255, 255, 255));
         fadePaint.setXfermode(new PorterDuffXfermode(Mode.MULTIPLY));
         labels = new ArrayList<>();
         for(int iterator = 0 ; iterator < FormulasUtil._PERIOD_NUMBER_ ; iterator++){
@@ -99,7 +99,7 @@ public class GraphView extends View {
     void drawLines(float[] vector){
         paint.setStrokeWidth(10f);
         paint.setAntiAlias(true);
-        paint.setColor(Color.argb(200, 227, 69, 53));
+        paint.setColor(Color.argb(200, 120, 85, 228));
         lineCanvas.drawLines(vector, paint);
     }
 

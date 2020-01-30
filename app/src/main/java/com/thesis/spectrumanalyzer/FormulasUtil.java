@@ -4,9 +4,9 @@ class FormulasUtil {
 
     static final int _SAMPLING_RATE_ = 44100;
     static final int _AUDIO_RECORD_MAX_VALUE_ = 32768;
-    static final int _FFT_POINTS_ = 1024;
+    static final int _FFT_SIZE_ = 1024;
+    static final int _THIRDS_NUMBER_ = 33;
     static final int _CALIBRATION_ = 20;
-    static final int _PERIOD_NUMBER_ = 33;
     private static final double _BASIC_FREQUENCY_ = 12.5;
 
     /**
@@ -58,6 +58,15 @@ class FormulasUtil {
         double Rc = (Math.pow(12200 , 2) * Math.pow(f , 2)) /
                 ((Math.pow(f , 2) + Math.pow(20.6 , 2)) * (Math.pow(f , 2) + Math.pow(12200 , 2)));
         return (int)(20 * Math.log10(Rc) + 0.06);
+    }
+
+    /**
+     * Convert amplitude to decibels, avoiding 0 value.
+     * @param amplitude signal's component amplitude
+     * @return value in decibels
+     */
+    static int convertToDecibels(long amplitude) {
+        return (int) (10 * Math.log10(Math.max(0.5, amplitude)));
     }
 
 }

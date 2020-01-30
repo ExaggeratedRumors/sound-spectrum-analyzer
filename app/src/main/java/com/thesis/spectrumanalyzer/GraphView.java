@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -17,14 +18,13 @@ import java.util.ArrayList;
 
 public class GraphView extends View {
 
-    private long[] data;
+    private int[] data;
     private Bitmap bitmap;
     private Canvas lineCanvas;
     private Matrix matrix = new Matrix();
-    private Paint fadePaint = new Paint();
+    private Paint fade = new Paint();
     private Paint paint = new Paint();
     private Rect screen = new Rect();
-    private FormulasUtil.State state;
     private ArrayList<LabelView> labels;
 
 
@@ -35,34 +35,22 @@ public class GraphView extends View {
 
     private void init() {
         data = null;
-        state = FormulasUtil.State.A_WEIGHTING;
-        fadePaint.setColor(Color.argb(222, 255, 255, 255));
-        fadePaint.setXfermode(new PorterDuffXfermode(Mode.MULTIPLY));
+        fade.setColor(Color.argb(222, 255, 255, 255));
+        fade.setXfermode(new PorterDuffXfermode(Mode.MULTIPLY));
         labels = new ArrayList<>();
-        for(int iterator = 0 ; iterator < FormulasUtil._PERIOD_NUMBER_ ; iterator++){
+        for(int iterator = 0 ; iterator < FormulasUtil._THIRDS_NUMBER_ ; iterator++){
             labels.add(new LabelView());
         }
     }
 
-    public void invalidate(long[] data) {
+    public void invalidate(int[] data) {
         this.data = data;
         invalidate();
     }
 
-    public void changeState(FormulasUtil.State state){
-        this.state = state;
+    public void changeState(){
+        lineCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         invalidate();
-    }
-
-    private int getDamping(int numberOfTerce){
-        switch (state) {
-            case A_WEIGHTING:
-                return FormulasUtil.weightingA(numberOfTerce);
-            case C_WEIGHTING:
-                return FormulasUtil.weightingC(numberOfTerce);
-            default:
-                return 0;
-        }
     }
 
     @Override
@@ -77,21 +65,19 @@ public class GraphView extends View {
         lineCanvas.drawColor(Color.TRANSPARENT);
         if (data != null)
             drawComponents(canvas);
-        lineCanvas.drawPaint(fadePaint);
+        lineCanvas.drawPaint(fade);
         matrix.reset();
         canvas.drawBitmap(bitmap, matrix, null);
     }
 
     public void drawComponents(Canvas canvas) {
         float[] drawingVector = new float[2 * data.length * 4];
-        for (int iterator = 0; iterator < data.length / 2; iterator++) {
-            drawingVector[iterator * 4] = iterator * 32  + 20;
-            drawingVector[iterator * 4 + 2] = iterator * 32 + 20;
-            int dbValue = (int) (10 * Math.log10(Math.max(1, (Math.pow(data[2 * iterator] , 2) + Math.pow(data[2 * iterator + 1] ,  2)))));
-            dbValue = Math.max(0, getDamping(iterator) + dbValue);
-            drawingVector[iterator * 4 + 1] = -150 + screen.height();
-            drawingVector[iterator * 4 + 3] = -150 + screen.height() - (dbValue * 12 - 10);
-            drawLabels(iterator, dbValue, drawingVector, canvas);
+        for (int iterator = 0 ; iterator < data.length ; iterator++) {
+            drawingVector[iterator * 4] = iterator * 32  + 20; //calibration of position on screen
+            drawingVector[iterator * 4 + 2] = iterator * 32 + 20; //calibration of position on screen
+            drawingVector[iterator * 4 + 1] = -150 + screen.height(); //calibration of position on screen
+            drawingVector[iterator * 4 + 3] = -150 + screen.height() - (data[iterator] * 12 - 10); //calibration of position on screen
+            drawLabel(iterator, data[iterator], drawingVector, canvas);
         }
         drawLines(drawingVector);
     }
@@ -103,7 +89,7 @@ public class GraphView extends View {
         lineCanvas.drawLines(vector, paint);
     }
 
-    void drawLabels(int numberOfTerce, int dbValue, float[] vector, Canvas canvas){
+    void drawLabel(int numberOfTerce, int dbValue, float[] vector, Canvas canvas){
         labels.get(numberOfTerce).onRefresh(dbValue);
         int shift = 100;
         if(numberOfTerce % 2 == 0) shift += 50;

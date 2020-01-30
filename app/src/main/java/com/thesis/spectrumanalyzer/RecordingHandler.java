@@ -22,7 +22,8 @@ class RecordingHandler {
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 if (graphicComponents.getGraph() != null)
-                    graphicComponents.getGraph().changeState(state);
+                    graphicComponents.getGraph().changeState();
+                activity.changeState(state);
             }
         });
     }
@@ -31,7 +32,7 @@ class RecordingHandler {
      * Send new converted data to graphic components
      * @param data converted signal
      */
-    void dataChangeNotify(final long[] data){
+    void dataChangeNotify(final int[] data){
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 if (graphicComponents.getGraph() != null)

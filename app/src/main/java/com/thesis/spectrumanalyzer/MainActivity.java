@@ -18,32 +18,45 @@ import java.util.ArrayList;
 public class MainActivity extends Activity {
     private AudioRecorder recorder;
     private RecordingHandler handler;
+    private FormulasUtil.State state;
+
 
     String[] permissions = new String[]{
-            Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.RECORD_AUDIO
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         checkPermissions();
+        setSystemWindow();
         setContentView(R.layout.activity_main);
-        setSystemBar();
         GraphicComponents graphicComponents = new GraphicComponents(this);
         graphicComponents.setGraphicComponents();
+        state = FormulasUtil.State.A_WEIGHTING;
         handler = new RecordingHandler(this, graphicComponents);
     }
 
-    public void setSystemBar(){
+    public void setSystemWindow(){
         Window window = getWindow();
+        window.requestFeature(Window.FEATURE_NO_TITLE);
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |  View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN );
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.TRANSPARENT);
         window.setNavigationBarColor(Color.TRANSPARENT);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startRecording();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        recorder.stopRecording();
     }
 
     public void startRecording() {
@@ -55,10 +68,11 @@ public class MainActivity extends Activity {
                     recorder = new AudioRecorder();
                     recorder.initRecorder();
                     while (recorder.isRecording()) {
-                        if (recorder.readToBuffer()) continue;
+                        if (recorder.readRecordedData()) continue;
                         converter.convertToComplex(recorder.getData());
                         converter.fft();
-                        if (handler != null) handler.dataChangeNotify(converter.divideToThirds());
+                        converter.divideToThirds();
+                        if (handler != null) handler.dataChangeNotify(converter.getDbSignalForm(state));
                         sleep(85);
                     }
                     recorder.stop();
@@ -89,6 +103,10 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void changeState(FormulasUtil.State state){
+        this.state = state;
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -97,17 +115,5 @@ public class MainActivity extends Activity {
             }
             return;
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        startRecording();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        recorder.stopRecording();
     }
 }

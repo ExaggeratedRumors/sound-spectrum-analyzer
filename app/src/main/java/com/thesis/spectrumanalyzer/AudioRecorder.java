@@ -29,10 +29,9 @@ class AudioRecorder {
 
     /**
      * Reads audio data from the audio hardware for recording into a byte array.
-     * https://stackoverflow.com/questions/24270379/meaning-of-values-from-audiorecord-read
      * @return zero or the negative number means error
      */
-    boolean readToBuffer(){
+    boolean readRecordedData(){
         return recorder.read(data, 0, bufferSize) <= 0;
     }
 

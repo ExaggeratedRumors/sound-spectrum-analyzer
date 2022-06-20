@@ -1,6 +1,6 @@
 # Sound Spectrum Analyzer
 
-Visualization of signal frequency spectrum.
+Android application for visualization of signal frequency spectrum.
 Processes the time signal from the microphone using FFT and A-weighting or C-weighting.
 Depicts the sound amplitude for each thirds.
 

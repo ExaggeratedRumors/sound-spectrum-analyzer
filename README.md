@@ -1,4 +1,4 @@
-# Spectrum Analyzer
+# Sound Spectrum Analyzer
 
 Visualization of signal frequency spectrum.
 Processes the time signal from the microphone using FFT and A-weighting or C-weighting.
